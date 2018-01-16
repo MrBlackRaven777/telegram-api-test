@@ -26,6 +26,7 @@ def explorer(path):
         # print("no path, try again")
         explorer(path)
 
-print(os.getcwd())
+#print(os.getcwd())
 # explorer("E:/#")\
 #shelve_test(111)
+explorer("C:/")

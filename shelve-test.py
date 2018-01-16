@@ -1,6 +1,6 @@
 import shelve
 import os
-from config import shelve_name
+import config
 
 
 def shelve_create(id):
@@ -32,7 +32,7 @@ def shelve_write(id, key, state):
 
 def shelve_read(id, key):
     name = 'shelve_' + str(id)
-    with shelve.open(name) as storage:
+    with shelve.open(name, flag = "r") as storage:
         try:
             return storage[key]
         except:
@@ -44,6 +44,11 @@ def shelve_read(id, key):
 #print(shelve_create(123))
 #shelve_write(123,"key1","State1")
 print(shelve_read(332761,"curr_dir"))
-
+with shelve.open("shelve_332761") as storage:
+    print(list(storage.items()))
+    storage['favorites'] = config.favorites
+    print(list(storage.items()))
+#    print(storage.pop('favorites').values())
+#    print(list(storage.items()))
 #print(shelve_remove(123))
 #print(shelve_remove(123))

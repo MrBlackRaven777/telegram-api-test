@@ -1,6 +1,6 @@
 import os
 import shelve
-from config import favorites as fav
+#from config import favorites as fav
 
 
 def create_markup(button_list, sh_id, num=1):
@@ -59,7 +59,7 @@ def shelve_create(id):
     name = 'shelve_' + str(id) + '.db'
     try:
         f = open(name, 'x')
-        f[is_expl_on] = False
+        f['is_expl_on'] = False
         f.close()
         return "Make"
     except FileExistsError:
@@ -93,6 +93,14 @@ def shelve_read(id, key):
         except:
             return None
 
+
+#def get_favs(id):
+#    name = 'shelve_' + str(id)
+#    with shelve.open(name) as storage:
+#        try:
+#            return storage['favorites']
+#        except:
+#            return None
 #testlist =[i**3 for i in range(7)]
 # testos = explorer("E:/Eclipse/tabel-tele-bot/") #os.listdir("/storage/emulated/0/qpython/scripts")
 # print(create_markup(list(fav.keys())))
