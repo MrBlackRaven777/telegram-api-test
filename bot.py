@@ -14,7 +14,7 @@ dsp = upd.dispatcher
 
 def echo(bot, upd):
     if upd.message.text == "Choose folder":
-        utils.shelve_write(upd.message.chat_id, 'curr_dir', 'E:/')
+        utils.shelve_write(upd.message.chat_id, 'curr_dir', config.start_path)
         markup = telegram.ReplyKeyboardMarkup(
             utils.create_markup(utils.explorer(upd.message.chat_id, '')))
         bot.sendMessage(chat_id=upd.message.chat_id,
@@ -40,7 +40,7 @@ def echo(bot, upd):
     #                 text=upd.message.text * 2, reply_markup=markup)
 
 
-def explorer(bot, upd, cpath="E:/"):
+def explorer(bot, upd, cpath=config.start_path):
     dirs_list = []
     if config.is_expl_on is True:
         next_dir = upd.message.text

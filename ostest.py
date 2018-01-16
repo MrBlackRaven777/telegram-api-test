@@ -1,7 +1,7 @@
 import os
 import shelve
-from config import favorites as fav
-
+#from config import favorites as fav
+import config
 
 def shelve_test(chat_id):
     sh = shelve.open(chat_id, flag='n')
@@ -26,6 +26,6 @@ def explorer(path):
         # print("no path, try again")
         explorer(path)
 
-
+print(os.getcwd())
 # explorer("E:/#")\
-shelve_test(111)
+#shelve_test(111)

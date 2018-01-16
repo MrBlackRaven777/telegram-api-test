@@ -41,6 +41,9 @@ def shelve_read(id, key):
 
 # shelve_write(123, True)
 # print(shelve_read('is_on'))
-print(shelve_create(123))
-print(shelve_remove(123))
-print(shelve_remove(123))
+#print(shelve_create(123))
+#shelve_write(123,"key1","State1")
+print(shelve_read(332761,"curr_dir"))
+
+#print(shelve_remove(123))
+#print(shelve_remove(123))
