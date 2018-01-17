@@ -1,6 +1,7 @@
 import shelve
 import os
 import config
+import utils
 
 
 def shelve_create(id):
@@ -25,30 +26,23 @@ def shelve_remove(id):
 
 
 def shelve_write(id, key, state):
-    name = 'shelve_' + str(id)
+    name = 'shelve_' + str(id) + ".db"
     with shelve.open(name) as storage:
         storage[key] = state
 
 
 def shelve_read(id, key):
-    name = 'shelve_' + str(id)
-    with shelve.open(name, flag = "r") as storage:
+    root_dir = os.getcwd()
+    os.chdir("users_storage")
+    name = 'shelve_' + str(id) 
+    with shelve.open(name, 'r') as storage:
+        os.chdir(root_dir)
         try:
-            return storage[key]
+            return storage.get(key)
         except:
             return None
 
 
-# shelve_write(123, True)
-# print(shelve_read('is_on'))
-#print(shelve_create(123))
-#shelve_write(123,"key1","State1")
-print(shelve_read(332761,"curr_dir"))
-with shelve.open("shelve_332761") as storage:
-    print(list(storage.items()))
-    storage['favorites'] = config.favorites
-    print(list(storage.items()))
-#    print(storage.pop('favorites').values())
-#    print(list(storage.items()))
-#print(shelve_remove(123))
-#print(shelve_remove(123))
+print(utils.shelve_read(115934446, 'favorites'))
+#print(shelve_read(115934446, 'favorites'))
+print(utils.os_choose())

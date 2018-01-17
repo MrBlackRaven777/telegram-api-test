@@ -1,5 +1,6 @@
 import os
 import shelve
+import sys
 #from config import favorites as fav
 
 
@@ -69,31 +70,62 @@ def shelve_create(id):
 
 
 def shelve_remove(id):
-    exts=['.db', '.dir', '.dat', '.bak']
+    root_dir = os.getcwd()
+    os.chdir("users_storage")
+#    exts=['.db', '.dir', '.dat', '.bak']
     # name = 'shelve_' + str(id) + '.db'
     try:
-        for i in exts:
-            os.remove('shelve_' + str(id) + exts[i])
-        return "removed"
+        for d, dirs, files in os.walk(os.getcwd()):
+            for f in files:   
+                if str(id) in f:
+                        os.remove(f)
+        os.chdir(root_dir)
+        return "Removed successfully"
     except FileNotFoundError:
         return "404"
+    except:
+        return sys.exc_info()
+    
 
 
 def shelve_write(id, key, state):
+    root_dir = os.getcwd()
+    os.chdir("users_storage")
     name = 'shelve_' + str(id)
-    with shelve.open(name) as storage:
+    with shelve.open(name, 'c') as storage:
         storage[key] = state
+    os.chdir(root_dir)
 
 
 def shelve_read(id, key):
+    root_dir = os.getcwd()
+    os.chdir("users_storage")
     name = 'shelve_' + str(id)
-    with shelve.open(name) as storage:
+    with shelve.open(name, 'r') as storage:
+        os.chdir(root_dir)
         try:
             return storage[key]
         except:
+            return sys.exc_info()
+        
+    
+
+def config_setup(id):
+    name = 'shelve_' + str(id)
+    with shelve.open(name) as storage:
+        try:
+            return storage.keys()
+        except:
             return None
-
-
+        
+def os_choose():  
+    if os.name == "nt":
+        return {"curr_dir": os.path.expanduser("~"), "Root": "C:/", "Download": os.path.expanduser("~\\Downloads"), "Video": os.path.expanduser("~\\Videos"), "Default folder": os.getcwd()}
+    elif os.name == "posix":
+        return {"curr_dir": os.path.expanduser("~"), "Root": "/", "Download": os.path.expanduser("~/Download"), "Movies": os.path.expanduser("~/Movies"), "Default folder": os.getcwd()}
+    else:
+        return {"curr_dir": "/"}
+        
 #def get_favs(id):
 #    name = 'shelve_' + str(id)
 #    with shelve.open(name) as storage:
