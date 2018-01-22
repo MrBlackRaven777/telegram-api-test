@@ -1,14 +1,20 @@
 import os
 import shelve
 
-token = "345248007:AAF4R8mKESAnqBn_jXOReMLbatqMzz8TMwc" #Your bot's token
+token = "345248007:AAF4R8mKESAnqBn_jXOReMLbatqMzz8TMwc" #Your bot's token from BotFather
 
-allowed_id = ("332761", "115934446") #IDs of users, who can use this bot
+allowed_id = ("332761", "115934446") #IDs of users, who can use this bot "332761", 
 
-notify_not_allowed = True #If True, then you will recieve messages from bot, when someone not from allowed_id list wil try to use your bot
+admin_id = ("332761") #ID of admin 
+
+notify_not_allowed = True #If True, then admin_id will recieve messages from bot, 
+    #when someone not from allowed_id list wil try to use your bot
 
 
 is_expl_on = False
+
+if os.name == 'nt':
+    usr_strg = "\\users_storage"
 #full_path = "E:/"
 #shelve_name = 'shelve.db'
 #

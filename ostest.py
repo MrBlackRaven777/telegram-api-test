@@ -30,7 +30,9 @@ def explorer(path):
 #os.chdir(%USERPROFILE%)
 #os.path.expanduser(~)
     
-print(utils.shelve_read(332761,'favorites').values())
+print(os.getcwd())
+os.chdir('users_storage')
+print(os.getcwd())
 #print(utils.shelve_read(332761, "favorites"))
 #for d, fo, fi in os.walk(os.getcwd()):
 #    print(d)

@@ -44,25 +44,23 @@ dsp = upd.dispatcher
     # bot.sendMessage(chat_id=upd.message.chat_id,
     #                 text=upd.message.text * 2, reply_markup=markup)
 
-def check_id(bot, upd):
-#Check user permission to using bot
-    if str(upd.message.chat_id) in config.allowed_id:
-        return True        
-    else:
-        bot.sendMessage(chat_id=upd.message.chat_id,
-                    text="You are not allowed to use this bot")
-        if config.notify_not_allowed == True:
-            bot.sendMessage(chat_id=332761,
-                        text="Кто-то стучится в дом, id=" + 
-                        str(upd.message.chat_id) + ", зовут " + 
-                        upd.message.from_user.first_name + " " +
-                        upd.message.from_user.last_name)
-        return False
+def check_id(func_of_bot):
+    def wrapper(bot, upd):
+        if str(upd.message.chat_id) in config.allowed_id:
+            func_of_bot(bot, upd)
+        else:
+            bot.sendMessage(chat_id=upd.message.chat_id,
+                        text="You are not allowed to use this bot")
+            if config.notify_not_allowed == True:
+                bot.sendMessage(chat_id=config.admin_id,
+                            text="Кто-то стучится в дом, id=" + 
+                            str(upd.message.chat_id) + ", зовут " + 
+                            upd.message.from_user.first_name + " " +
+                            upd.message.from_user.last_name)
+    return wrapper
         
-
+@check_id
 def explorer(bot, upd, cpath=""):
-    if check_id(bot, upd) == False:
-       return
     dirs_list = []
     if config.is_expl_on is True:
         next_dir = upd.message.text
@@ -70,39 +68,62 @@ def explorer(bot, upd, cpath=""):
         utils.shelve_write(upd.message.chat_id, 'curr_path', curr_path)
         os.chdir(curr_path)
         dirs_list = next(os.walk(os.getcwd))[1]
-        markup = telegram.ReplyKeyboardMarkup(utils.create_markup(dirs_list,upd.message.chat_id))
+        markup = telegram.ReplyKeyboardMarkup(utils.create_markup(dirs_list,upd.message.chat_id), one_time_keyboard=True)
         bot.sendMessage(chat_id=upd.message.chat_id, text='Choose next', reply_markup = markup)
     else:
         bot.sendMessage(chat_id=upd.message.chat_id, text='Error')
 
-
+@check_id
 def path(bot, upd):
-    if check_id(bot, upd) == False:
-       return
     utils.shelve_create(upd.message.chat_id)
     # utils.shelve_write(upd.message.chat_id, "is_expl_on", True)
     fav_list = list(utils.shelve_read(upd.message.chat_id,'favorites').keys())
     markup = telegram.ReplyKeyboardMarkup(
-        utils.create_markup(fav_list, upd.message.chat_id))
+        utils.create_markup(fav_list, upd.message.chat_id), one_time_keyboard=True)
     bot.sendMessage(chat_id=upd.message.chat_id,
                     text="Choose folder from favorites, file system or cancel", reply_markup=markup)
-    
+@check_id   
 def echo(bot, upd):
-    if check_id(bot, upd) == False:
-       return
     favorites = utils.shelve_read(upd.message.chat_id,'favorites')
     fav_list = favorites.keys()
-    if upd.message.text in fav_list:
-        answer = favorites(upd.message.text)
-    markup = telegram.ReplyKeyboardMarkup(
-        utils.create_markup(fav_list, upd.message.chat_id))
-    bot.sendMessage(chat_id=upd.message.chat_id,
-                    text=answer, reply_markup=markup)
-
+    full_path = utils.shelve_read(upd.message.chat_id, 'curr_dir')
+    dirs = next(os.walk(full_path))[1]
+    if utils.shelve_read(upd.message.chat_id,'is_expl_on') == True:
+    
+        if upd.message.text in fav_list:
+            utils.shelve_write(upd.message.chat_id, "curr_dir", favorites(upd.message.text))
+            answer = "Choosen folder: " + favorites(upd.message.text)
+            markup = telegram.ReplyKeyboardMarkup(
+                    utils.create_markup(fav_list, upd.message.chat_id))
+        elif upd.message.text in dirs:
+            utils.shelve_write(upd.message.chat_id, "curr_dir", full_path + "\\" + upd.message.text)
+            answer = utils.explorer(upd.message.chat_id, upd.message.text)
+            markup = telegram.ReplyKeyboardMarkup(
+                    utils.create_markup(answer, upd.message.chat_id))
+            answer = None
+        else:
+            answer = "No directory named ""{0}"" in ""{1}"". Try again".format(upd.message.text, full_path)
+            markup = utils.create_markup(dirs, upd.message.chat_id)
+        
+        bot.sendMessage(chat_id=upd.message.chat_id,
+                        text=answer, reply_markup=markup)
+    else:
+        if upd.message.text == 'Choose folder':
+            utils.shelve_write(upd.message.chat_id, "is_expl_on", True)
+            full_path = str(utils.shelve_read(upd.message.chat_id,'favorites').get("Download"))
+            print(full_path)
+            utils.shelve_write(upd.message.chat_id, "curr_dir", full_path)
+            answer = utils.explorer(upd.message.chat_id, "")
+            markup = telegram.ReplyKeyboardMarkup(
+                        utils.create_markup(answer, upd.message.chat_id))
+            answer = "Choose destination folder"
+            
+            bot.sendMessage(chat_id=upd.message.chat_id,
+                        text=answer, reply_markup=markup)
+    
+@check_id
 def start(bot, upd):
 #Starts bot, creates shelves for new user and setting up them with default folders for enviroment, where bot working
-    if check_id(bot, upd) == False:
-        return
     new_user = True
     for d, dirs, files in os.walk(os.getcwd()):
         for f in files:   
@@ -113,22 +134,19 @@ def start(bot, upd):
         curr_dir = favorites.pop("curr_dir")
         utils.shelve_write(upd.message.chat_id, "curr_dir", curr_dir)
         utils.shelve_write(upd.message.chat_id, "favorites", favorites)
-        utils.shelve_write(upd.message.chat_id, "is_expl_on", "false")
+        utils.shelve_write(upd.message.chat_id, "is_expl_on", False)
         reply_text = "Yours OS is: " + os.name + ". Your storage successfully created. Welcome!" 
     else:
         reply_text = "You're already my user. Send me /reset to destroy your personal settings"
     bot.sendMessage(chat_id=upd.message.chat_id, text=reply_text)
-    
+
+@check_id    
 def reset(bot, upd):
-    if check_id(bot, upd) == False:
-        return
     markup = telegram.ReplyKeyboardRemove()
     bot.sendMessage(chat_id=upd.message.chat_id, text=utils.shelve_remove(upd.message.chat_id), reply_markup=markup)    
     
-
+@check_id
 def my_id(bot, upd):
-#    if check_id(bot, upd) == False:
-#        return
     bot.sendMessage(chat_id=upd.message.chat_id, text= "Your id is: " + str(upd.message.chat_id))
     
 

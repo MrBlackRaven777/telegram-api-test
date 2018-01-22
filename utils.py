@@ -9,7 +9,7 @@ def create_markup(button_list, sh_id, num=1):
     n_rows = [0, 0, 0]
     blen = len(button_list)
     if blen < 10:
-        for i in range(blen):
+        for i in range(0,blen-1):
             n_rows[i % 3] = n_rows[i % 3] + 1
         n = 0
         keyboard = [[0] * n_rows[0], [0] * n_rows[1], [0] * n_rows[2]]
@@ -19,7 +19,17 @@ def create_markup(button_list, sh_id, num=1):
                 keyboard[l][k] = button_list[n]
                 n += 1
     else:
-        print(">9")
+        start = (num-1)*9
+        stop = blen if blen <= num*9 else num*9
+        for i in range(start//9+1-num, stop%9-1):
+            n_rows[i % 3] = n_rows[i % 3] + 1
+        n = start
+        keyboard = [[0] * n_rows[0], [0] * n_rows[1], [0] * n_rows[2]]
+        for l in range(3):
+            j = n_rows[l]
+            for k in range(0, j):
+                keyboard[l][k] = button_list[n]
+                n += 1
 
     if shelve_read(sh_id, "is_expl_on") == True:
         keyboard.append(["Back", "Done", "More"])
@@ -31,9 +41,14 @@ def explorer(id, ch_dir):
     if shelve_read(id, "curr_dir") is None:
         return "No path"
     else:
-        full_path = shelve_read(id, "curr_dir") + '/' + ch_dir
-        dirs_list = next(os.walk(full_path))[1]
-        return dirs_list
+        full_path = shelve_read(id, "curr_dir") + '\\' + ch_dir
+        print(full_path)
+        try:
+            dirs_list = next(os.walk(full_path))[1]
+            print(dirs_list)
+            return dirs_list
+        except:
+            return None
 
 
 # def explorer(path="/storage/emulated/0/qpython"):
@@ -92,9 +107,9 @@ def shelve_write(id, key, state):
     root_dir = os.getcwd()
     os.chdir("users_storage")
     name = 'shelve_' + str(id)
-    with shelve.open(name, 'c') as storage:
+    with shelve.open(name) as storage:
         storage[key] = state
-    os.chdir(root_dir)
+        os.chdir(root_dir)
 
 
 def shelve_read(id, key):
@@ -102,11 +117,12 @@ def shelve_read(id, key):
     os.chdir("users_storage")
     name = 'shelve_' + str(id)
     with shelve.open(name, 'r') as storage:
-        os.chdir(root_dir)
         try:
-            return storage[key]
+            data = storage.get(key)
         except:
-            return sys.exc_info()
+            data = sys.exc_info()
+        os.chdir(root_dir)
+        return data
         
     
 
@@ -125,6 +141,9 @@ def os_choose():
         return {"curr_dir": os.path.expanduser("~"), "Root": "/", "Download": os.path.expanduser("~/Download"), "Movies": os.path.expanduser("~/Movies"), "Default folder": os.getcwd()}
     else:
         return {"curr_dir": "/"}
+    
+
+    
         
 #def get_favs(id):
 #    name = 'shelve_' + str(id)
